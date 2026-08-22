@@ -5,7 +5,7 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b',
-  'docker-php-ext-install', 'libxml2-dev', 'intl', 'pdo_mysql', 'pdo_pgsql', 'simplexml',
+  'apt-get upgrade -y', 'docker-php-ext-install', 'libxml2-dev', 'intl', 'pdo_mysql', 'pdo_pgsql', 'simplexml',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2-bin /composer /usr/local/bin/composer'
 )) {
@@ -37,6 +37,10 @@ if (Test-Path $workflow) {
   foreach ($required in @('linux/amd64', 'linux/arm64', 'provenance: mode=max', 'sbom: true', 'CRITICAL,HIGH')) {
     if ($content -notmatch [regex]::Escape($required)) { throw "Workflow contract missing: $required" }
   }
+  foreach ($required in @('Report all local image vulnerabilities', 'Enforce fixable local image vulnerabilities', 'Report all published vulnerabilities', 'Enforce fixable published vulnerabilities')) {
+    if ($content -notmatch [regex]::Escape($required)) { throw "Workflow vulnerability policy missing: $required" }
+  }
+  if ([regex]::Matches($content, 'ignore-unfixed: true').Count -ne 2) { throw 'Workflow must gate fixable vulnerabilities in validation and publish jobs' }
 }
 
 Write-Host 'Static Docker contract passed.'

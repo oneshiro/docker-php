@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.description="Runtime-only PHP image; it contains 
 RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
+    apt-get upgrade -y; \
     apt-get install -y --no-install-recommends libicu-dev libpq-dev libxml2-dev; \
     docker-php-ext-install -j"$(nproc)" intl pdo_mysql pdo_pgsql simplexml; \
     apt-mark auto '.*' > /dev/null; \
