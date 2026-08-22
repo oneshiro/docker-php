@@ -1,0 +1,6 @@
+services:
+  php:
+    build:
+      context: .
+    ports:
+      - "80:8080"

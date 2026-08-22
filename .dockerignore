@@ -1,0 +1,12 @@
+.git
+.github
+.env
+.env.*
+*.pem
+*.key
+*.crt
+idea.md
+plan.md
+README.md
+SECURITY.md
+test
