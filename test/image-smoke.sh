@@ -17,7 +17,7 @@ run() {
 actual_version="$(run php -r 'echo PHP_VERSION;')"
 [ "$actual_version" = "$EXPECTED_PHP_VERSION" ] || { echo "expected PHP $EXPECTED_PHP_VERSION, got $actual_version" >&2; exit 1; }
 
-for module in date dom fileinfo filter hash json libxml mbstring openssl pcre PDO pdo_mysql pdo_pgsql pdo_sqlite posix session simplexml sodium SPL zlib intl curl; do
+for module in date dom fileinfo filter hash json libxml mbstring openssl pcre PDO pdo_mysql pdo_pgsql pdo_sqlite posix session SimpleXML sodium SPL zlib intl curl; do
   run php -m | grep -Fx "$module" >/dev/null || { echo "missing PHP module: $module" >&2; exit 1; }
 done
 
