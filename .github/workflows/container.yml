@@ -10,7 +10,7 @@ on:
       - .github/workflows/container.yml
   push:
     tags:
-      - '8.5.9-*'
+      - '*'
   workflow_dispatch:
 
 env:
