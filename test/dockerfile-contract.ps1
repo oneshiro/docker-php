@@ -25,6 +25,12 @@ foreach ($path in @('docker/apache/000-default.conf', 'docker/apache/ports.conf'
 
 $smokeTest = Get-Content -Raw (Join-Path $root 'test/image-smoke.sh')
 if ($smokeTest -cnotmatch '\bSimpleXML\b') { throw 'Image smoke contract missing case-sensitive PHP module name: SimpleXML' }
+foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind')) {
+  if ($smokeTest -notmatch [regex]::Escape($required)) { throw "Image smoke health contract missing: $required" }
+}
+
+$apacheRuntimeConfig = Get-Content -Raw (Join-Path $root 'docker/apache/zz-runtime.conf')
+if ($apacheRuntimeConfig -notmatch '(?m)^ServerName localhost$') { throw 'Apache runtime contract missing global ServerName' }
 
 if (Test-Path $workflow) {
   $content = Get-Content -Raw $workflow
