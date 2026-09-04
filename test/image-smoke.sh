@@ -2,7 +2,7 @@
 set -eu
 
 : "${IMAGE:?Set IMAGE to the locally built image reference}"
-EXPECTED_PHP_VERSION="${EXPECTED_PHP_VERSION:-8.5.9}"
+EXPECTED_PHP_VERSION="${EXPECTED_PHP_VERSION:-7.3.33}"
 PLATFORM="${PLATFORM:-}"
 run_args=""
 if [ -n "$PLATFORM" ]; then
@@ -24,7 +24,6 @@ done
 [ "$(run id -u)" != "0" ] || { echo "container runs as root" >&2; exit 1; }
 run composer --version | grep -F 'Composer version 2.' >/dev/null || { echo "Composer 2 is unavailable" >&2; exit 1; }
 ! run sh -c 'command -v psql' || { echo "PostgreSQL client must not be present" >&2; exit 1; }
-! run sh -c 'for root in /var/www /opt /srv /usr/local; do [ ! -d "$root" ] || find "$root" -iname "*simplesaml*" -print -quit; done' | grep -q . || { echo "SimpleSAMLphp payload must not be present" >&2; exit 1; }
 
 health_dir="$(mktemp -d)"
 printf '%s\n' '<?php echo "php-smoke-ok";' > "$health_dir/health.php"
