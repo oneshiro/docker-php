@@ -11,7 +11,6 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - Composer 2.2 LTS จาก pinned Composer image
 - LDAP extension
 - `memcached` 3.1.5 จาก PECL
-- Predis 1.1.10 ที่ `/opt/predis`
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
 - Apache ทำงานด้วย `www-data` และไม่ใช้สิทธิ์ root
 - GitHub Actions build และตรวจทั้ง `amd64` กับ `arm64`
@@ -41,14 +40,23 @@ Extensions สำคัญพร้อมใช้งานใน image:
 docker compose run --rm php php -m
 ```
 
-## Redis client
+## LDAP และ Memcached
 
-Predis 1.1.10 ติดตั้งแยกจาก application ที่ `/opt/predis/vendor/autoload.php` เพื่อให้ downstream application โหลด Redis client ได้:
+Image มี PHP client extension สำหรับเชื่อมต่อ LDAP directory และ Memcached server ภายนอก แต่ไม่รวม server ทั้งสองชนิด และไม่รวม Redis client หรือ Predis
+
+ตรวจเฉพาะ module:
+
+```sh
+docker compose run --rm php php -m | grep -Ex 'ldap|memcached'
+```
+
+ตัวอย่างเริ่มต้นใน application:
 
 ```php
-require '/opt/predis/vendor/autoload.php';
+$ldap = ldap_connect('ldap://ldap.example.internal');
 
-$redis = new Predis\Client('tcp://redis:6379');
+$cache = new Memcached();
+$cache->addServer('memcached', 11211);
 ```
 
 ## Build และ Run

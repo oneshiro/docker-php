@@ -23,7 +23,6 @@ done
 
 [ "$(run id -u)" != "0" ] || { echo "container runs as root" >&2; exit 1; }
 run composer --version | grep -F 'Composer version 2.' >/dev/null || { echo "Composer 2 is unavailable" >&2; exit 1; }
-run php -r 'require "/opt/predis/vendor/autoload.php"; exit(class_exists("Predis\\Client") ? 0 : 1);' || { echo "Predis 1.1.10 is unavailable" >&2; exit 1; }
 ! run sh -c 'command -v psql' || { echo "PostgreSQL client must not be present" >&2; exit 1; }
 
 health_dir="$(mktemp -d)"

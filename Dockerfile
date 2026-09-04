@@ -7,30 +7,36 @@ FROM ${PHP_BASE_IMAGE}
 LABEL org.opencontainers.image.title="PHP 7.3.33 Apache runtime"
 LABEL org.opencontainers.image.description="Runtime-only PHP image; it contains no application payload or PostgreSQL service."
 
-# Keep only the libraries needed at runtime after compiling the PHP extensions.
+# Install build dependencies once, then keep each extension build independently diagnosable.
 RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
+    printf '%s\n' "$savedAptMark" > /tmp/saved-apt-mark; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends libicu-dev libldap2-dev libmemcached-dev libpq-dev libsqlite3-dev libxml2-dev; \
+    apt-get install -y --no-install-recommends $PHPIZE_DEPS libicu-dev libldap2-dev libmemcached-dev libpq-dev libsqlite3-dev libxml2-dev zlib1g-dev
+
+RUN set -eux; \
     docker-php-ext-configure ldap --with-libdir="lib/$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
     docker-php-ext-install -j"$(nproc)" intl ldap mbstring pdo_mysql pdo_pgsql pdo_sqlite simplexml; \
+    php -m | grep -Fx ldap
+
+RUN set -eux; \
+    phpize --version; \
+    pkg-config --modversion libmemcached; \
+    pkg-config --modversion zlib; \
     pecl install memcached-3.1.5; \
     docker-php-ext-enable memcached; \
+    php --ri memcached
+
+RUN set -eux; \
     apt-mark auto '.*' > /dev/null; \
-    apt-mark manual $savedAptMark; \
-    apt-mark manual libicu67 libldap-2.4-2 libmemcached11 libpq5 libsqlite3-0; \
+    apt-mark manual $(cat /tmp/saved-apt-mark); \
+    apt-mark manual libicu67 libldap-2.4-2 libmemcached11 libpq5 libsqlite3-0 zlib1g; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /tmp/saved-apt-mark /var/lib/apt/lists/*
 
 # Composer 2.2 LTS supports the legacy PHP runtime; the multi-platform source is pinned.
 COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer
-
-RUN set -eux; \
-    mkdir -p /opt/predis; \
-    COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_CACHE_DIR=/tmp/composer-cache composer --working-dir=/opt/predis require --no-dev --prefer-dist --no-interaction predis/predis:1.1.10; \
-    rm -rf /tmp/composer-cache; \
-    chown -R www-data:www-data /opt/predis
 
 COPY docker/apache/ports.conf /etc/apache2/ports.conf
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf

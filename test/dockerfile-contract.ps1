@@ -5,10 +5,11 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:de13b730d81098236cde5fe90810e1572dc5c51cd190f83024ccf9e7a142ec05',
-  'apt-get upgrade -y', 'docker-php-ext-install', 'libldap2-dev', 'libmemcached-dev', 'libxml2-dev', 'libsqlite3-dev',
+  'apt-get upgrade -y', 'docker-php-ext-install', 'libldap2-dev', 'libmemcached-dev', 'libxml2-dev', 'libsqlite3-dev', 'zlib1g-dev',
   'intl', 'ldap', 'mbstring', 'pdo_mysql', 'pdo_pgsql', 'pdo_sqlite', 'simplexml',
   'pecl install memcached-3.1.5', 'docker-php-ext-enable memcached',
-  'predis/predis:1.1.10', '/opt/predis', 'libldap-2.4-2', 'libmemcached11',
+  '$PHPIZE_DEPS', '/tmp/saved-apt-mark', 'php -m | grep -Fx ldap', 'phpize --version',
+  'pkg-config --modversion libmemcached', 'pkg-config --modversion zlib', 'php --ri memcached', 'libldap-2.4-2', 'libmemcached11', 'zlib1g',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer'
 )) {
@@ -17,6 +18,15 @@ foreach ($required in @(
 
 if ($dockerfile -match 'libonig-(dev|5)') { throw 'Dockerfile must use PHP 7.3 bundled Oniguruma for mbstring' }
 if ($dockerfile -match '(?i)simplesaml') { throw 'Dockerfile must not bundle SimpleSAMLphp' }
+if ([regex]::Matches($dockerfile, 'RUN set -eux;').Count -lt 5) { throw 'LDAP and Memcached build stages must be isolated' }
+
+foreach ($path in @('Dockerfile', 'test/image-smoke.sh')) {
+  $content = Get-Content -Raw (Join-Path $root $path)
+  if ($content -match '(?i)predis|redis') { throw "$path must not reference Redis or Predis" }
+}
+
+$readme = Get-Content -Raw (Join-Path $root 'README.md')
+if ($readme -notmatch [regex]::Escape('ไม่รวม Redis client หรือ Predis')) { throw 'README must state that Redis and Predis are not included' }
 
 $compose = Join-Path $root 'compose.yaml'
 if (-not (Test-Path $compose)) { throw 'Compose service definition missing: compose.yaml' }
@@ -31,7 +41,7 @@ foreach ($path in @('docker/apache/000-default.conf', 'docker/apache/ports.conf'
 
 $smokeTest = Get-Content -Raw (Join-Path $root 'test/image-smoke.sh')
 if ($smokeTest -cnotmatch '\bSimpleXML\b') { throw 'Image smoke contract missing case-sensitive PHP module name: SimpleXML' }
-foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind', 'ldap', 'memcached', '/opt/predis/vendor/autoload.php')) {
+foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind', 'ldap', 'memcached')) {
   if ($smokeTest -notmatch [regex]::Escape($required)) { throw "Image smoke health contract missing: $required" }
 }
 if ($smokeTest -match '(?i)simplesaml') { throw 'Image smoke test must not depend on SimpleSAMLphp' }
