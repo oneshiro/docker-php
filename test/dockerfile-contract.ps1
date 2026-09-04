@@ -5,8 +5,10 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:de13b730d81098236cde5fe90810e1572dc5c51cd190f83024ccf9e7a142ec05',
-  'apt-get upgrade -y', 'docker-php-ext-install', 'libxml2-dev', 'libsqlite3-dev',
-  'intl', 'mbstring', 'pdo_mysql', 'pdo_pgsql', 'pdo_sqlite', 'simplexml',
+  'apt-get upgrade -y', 'docker-php-ext-install', 'libldap2-dev', 'libmemcached-dev', 'libxml2-dev', 'libsqlite3-dev',
+  'intl', 'ldap', 'mbstring', 'pdo_mysql', 'pdo_pgsql', 'pdo_sqlite', 'simplexml',
+  'pecl install memcached-3.1.5', 'docker-php-ext-enable memcached',
+  'predis/predis:1.1.10', '/opt/predis', 'libldap-2.4-2', 'libmemcached11',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer'
 )) {
@@ -29,7 +31,7 @@ foreach ($path in @('docker/apache/000-default.conf', 'docker/apache/ports.conf'
 
 $smokeTest = Get-Content -Raw (Join-Path $root 'test/image-smoke.sh')
 if ($smokeTest -cnotmatch '\bSimpleXML\b') { throw 'Image smoke contract missing case-sensitive PHP module name: SimpleXML' }
-foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind')) {
+foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind', 'ldap', 'memcached', '/opt/predis/vendor/autoload.php')) {
   if ($smokeTest -notmatch [regex]::Escape($required)) { throw "Image smoke health contract missing: $required" }
 }
 if ($smokeTest -match '(?i)simplesaml') { throw 'Image smoke test must not depend on SimpleSAMLphp' }

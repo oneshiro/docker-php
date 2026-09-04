@@ -12,16 +12,25 @@ RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends libicu-dev libpq-dev libsqlite3-dev libxml2-dev; \
-    docker-php-ext-install -j"$(nproc)" intl mbstring pdo_mysql pdo_pgsql pdo_sqlite simplexml; \
+    apt-get install -y --no-install-recommends libicu-dev libldap2-dev libmemcached-dev libpq-dev libsqlite3-dev libxml2-dev; \
+    docker-php-ext-configure ldap --with-libdir="lib/$(dpkg-architecture --query DEB_BUILD_MULTIARCH)"; \
+    docker-php-ext-install -j"$(nproc)" intl ldap mbstring pdo_mysql pdo_pgsql pdo_sqlite simplexml; \
+    pecl install memcached-3.1.5; \
+    docker-php-ext-enable memcached; \
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark; \
-    apt-mark manual libicu67 libpq5 libsqlite3-0; \
+    apt-mark manual libicu67 libldap-2.4-2 libmemcached11 libpq5 libsqlite3-0; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
 # Composer 2.2 LTS supports the legacy PHP runtime; the multi-platform source is pinned.
 COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer
+
+RUN set -eux; \
+    mkdir -p /opt/predis; \
+    COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_CACHE_DIR=/tmp/composer-cache composer --working-dir=/opt/predis require --no-dev --prefer-dist --no-interaction predis/predis:1.1.10; \
+    rm -rf /tmp/composer-cache; \
+    chown -R www-data:www-data /opt/predis
 
 COPY docker/apache/ports.conf /etc/apache2/ports.conf
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf

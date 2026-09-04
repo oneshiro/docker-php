@@ -9,6 +9,9 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - PHP 7.3.33 บน Debian Bullseye
 - Apache 2.4 พร้อม `mod_rewrite`
 - Composer 2.2 LTS จาก pinned Composer image
+- LDAP extension
+- `memcached` 3.1.5 จาก PECL
+- Predis 1.1.10 ที่ `/opt/predis`
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
 - Apache ทำงานด้วย `www-data` และไม่ใช้สิทธิ์ root
 - GitHub Actions build และตรวจทั้ง `amd64` กับ `arm64`
@@ -22,7 +25,9 @@ Extensions สำคัญพร้อมใช้งานใน image:
 | --- | --- |
 | `curl` | ติดต่อ HTTP/HTTPS API |
 | `intl` | locale, Unicode และ internationalization |
+| `ldap` | เชื่อมต่อ LDAP directory |
 | `mbstring` | จัดการข้อความหลาย byte |
+| `memcached` | Memcached data store |
 | `sodium` | cryptography |
 | `SimpleXML` | อ่านและประมวลผล XML |
 | `PDO` | API กลางสำหรับฐานข้อมูล |
@@ -34,6 +39,16 @@ Extensions สำคัญพร้อมใช้งานใน image:
 
 ```sh
 docker compose run --rm php php -m
+```
+
+## Redis client
+
+Predis 1.1.10 ติดตั้งแยกจาก application ที่ `/opt/predis/vendor/autoload.php` เพื่อให้ downstream application โหลด Redis client ได้:
+
+```php
+require '/opt/predis/vendor/autoload.php';
+
+$redis = new Predis\Client('tcp://redis:6379');
 ```
 
 ## Build และ Run
