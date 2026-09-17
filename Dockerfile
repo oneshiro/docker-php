@@ -12,11 +12,12 @@ RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends libicu-dev libpq-dev libxml2-dev; \
-    docker-php-ext-install -j"$(nproc)" intl pdo_mysql pdo_pgsql simplexml; \
+    apt-get install -y --no-install-recommends libicu-dev libldap2-dev libpq-dev libxml2-dev; \
+    docker-php-ext-configure ldap --with-ldap; \
+    docker-php-ext-install -j"$(nproc)" bcmath intl ldap pdo_mysql pdo_pgsql simplexml; \
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark; \
-    apt-mark manual libicu72 libpq5; \
+    apt-mark manual libicu72 libldap-2.5-0 libpq5; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 

@@ -5,11 +5,21 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b',
-  'apt-get upgrade -y', 'docker-php-ext-install', 'libxml2-dev', 'intl', 'pdo_mysql', 'pdo_pgsql', 'simplexml',
+  'apt-get upgrade -y', 'docker-php-ext-install', 'docker-php-ext-configure ldap --with-ldap',
+  'libxml2-dev', 'libldap2-dev', 'libldap-2.5-0',
+  'bcmath', 'intl', 'ldap', 'pdo_mysql', 'pdo_pgsql', 'simplexml',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2-bin /composer /usr/local/bin/composer'
 )) {
   if ($dockerfile -notmatch [regex]::Escape($required)) { throw "Dockerfile contract missing: $required" }
+}
+
+if ($dockerfile -notmatch 'apt-mark manual (?=[^\r\n]*\blibldap-2\.5-0\b)') {
+  throw 'Dockerfile contract missing retained OpenLDAP runtime library'
+}
+
+if ($dockerfile -match [regex]::Escape('liblber-2.5-0')) {
+  throw 'Dockerfile must not reference nonexistent Bookworm package: liblber-2.5-0'
 }
 
 $compose = Join-Path $root 'compose.yaml'

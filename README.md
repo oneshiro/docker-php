@@ -20,8 +20,10 @@ Extensions สำคัญพร้อมใช้งานใน image:
 
 | Extension | ใช้งาน |
 | --- | --- |
+| `bcmath` | คำนวณเลขแบบ arbitrary precision |
 | `curl` | ติดต่อ HTTP/HTTPS API |
 | `intl` | locale, Unicode และ internationalization |
+| `ldap` | เชื่อมต่อ LDAP directory service |
 | `mbstring` | จัดการข้อความหลาย byte |
 | `sodium` | cryptography |
 | `SimpleXML` | อ่านและประมวลผล XML |
