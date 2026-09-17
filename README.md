@@ -9,6 +9,7 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - PHP 8.5.9 บน Debian Bookworm
 - Apache 2.4 พร้อม `mod_rewrite`
 - Composer 2 จาก official Composer image
+- `unzip` สำหรับแตก ZIP archive ที่ Composer ใช้งานได้
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
 - Apache ทำงานด้วย `www-data` และไม่ใช้สิทธิ์ root
 - GitHub Actions build และตรวจทั้ง `amd64` กับ `arm64`
@@ -27,6 +28,7 @@ Extensions สำคัญพร้อมใช้งานใน image:
 | `mbstring` | จัดการข้อความหลาย byte |
 | `sodium` | cryptography |
 | `SimpleXML` | อ่านและประมวลผล XML |
+| `zip` | อ่านและเขียน ZIP archive |
 | `PDO` | API กลางสำหรับฐานข้อมูล |
 | `pdo_mysql` | MySQL และ MariaDB |
 | `pdo_pgsql` | PostgreSQL |
@@ -49,11 +51,12 @@ docker compose ps
 
 Apache ภายใน container ฟัง port `8080` โดย `compose.yaml` map `80:8080` หาก port 80 ถูกใช้งานอยู่ ให้เปลี่ยน host port หรือหยุด serviceเดิมก่อน
 
-ตรวจ PHP และ Composer:
+ตรวจ PHP, Composer และ `unzip`:
 
 ```sh
 docker compose run --rm php php --version
 docker compose run --rm php composer --version
+docker compose run --rm php unzip -v
 ```
 
 หยุด service:
@@ -100,7 +103,7 @@ Static contract บน Windows:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\test\dockerfile-contract.ps1
 ```
 
-Smoke test ตรวจ version, extensions, Composer, non-root user และ PHP endpoint ผ่าน Apache port `8080`
+Smoke test ตรวจ version, extensions, Composer, `unzip`, non-root user และ PHP endpoint ผ่าน Apache port `8080`
 
 ## GHCR และ Release
 

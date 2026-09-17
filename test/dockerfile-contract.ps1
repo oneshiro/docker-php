@@ -5,8 +5,9 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b',
-  'apt-get upgrade -y', 'docker-php-ext-install', 'docker-php-ext-configure ldap --with-ldap',
-  'libxml2-dev', 'libldap2-dev', 'libldap-2.5-0',
+  'apt-get upgrade -y', 'docker-php-ext-install',
+  'docker-php-ext-configure ldap --with-ldap', 'docker-php-ext-configure zip --with-zip',
+  'libxml2-dev', 'libldap2-dev', 'libldap-2.5-0', 'libzip-dev', 'libzip4', 'unzip',
   'bcmath', 'intl', 'ldap', 'pdo_mysql', 'pdo_pgsql', 'simplexml',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2-bin /composer /usr/local/bin/composer'
@@ -14,8 +15,12 @@ foreach ($required in @(
   if ($dockerfile -notmatch [regex]::Escape($required)) { throw "Dockerfile contract missing: $required" }
 }
 
-if ($dockerfile -notmatch 'apt-mark manual (?=[^\r\n]*\blibldap-2\.5-0\b)') {
-  throw 'Dockerfile contract missing retained OpenLDAP runtime library'
+if ($dockerfile -notmatch 'docker-php-ext-install [^\r\n]*\bzip\b') {
+  throw 'Dockerfile contract missing PHP zip extension installation'
+}
+
+if ($dockerfile -notmatch 'apt-mark manual (?=[^\r\n]*\blibldap-2\.5-0\b)(?=[^\r\n]*\blibzip4\b)(?=[^\r\n]*\bunzip\b)') {
+  throw 'Dockerfile contract missing retained OpenLDAP/libzip runtime dependencies or unzip'
 }
 
 if ($dockerfile -match [regex]::Escape('liblber-2.5-0')) {

@@ -17,12 +17,13 @@ run() {
 actual_version="$(run php -r 'echo PHP_VERSION;')"
 [ "$actual_version" = "$EXPECTED_PHP_VERSION" ] || { echo "expected PHP $EXPECTED_PHP_VERSION, got $actual_version" >&2; exit 1; }
 
-for module in bcmath date dom fileinfo filter hash json ldap libxml mbstring openssl pcre PDO pdo_mysql pdo_pgsql pdo_sqlite posix session SimpleXML sodium SPL zlib intl curl; do
+for module in bcmath date dom fileinfo filter hash json ldap libxml mbstring openssl pcre PDO pdo_mysql pdo_pgsql pdo_sqlite posix session SimpleXML sodium SPL zlib zip intl curl; do
   run php -m | grep -Fx "$module" >/dev/null || { echo "missing PHP module: $module" >&2; exit 1; }
 done
 
 [ "$(run id -u)" != "0" ] || { echo "container runs as root" >&2; exit 1; }
 run composer --version | grep -F 'Composer version 2.' >/dev/null || { echo "Composer 2 is unavailable" >&2; exit 1; }
+run unzip -v >/dev/null || { echo "unzip is unavailable" >&2; exit 1; }
 ! run sh -c 'command -v psql' || { echo "PostgreSQL client must not be present" >&2; exit 1; }
 ! run sh -c 'for root in /var/www /opt /srv /usr/local; do [ ! -d "$root" ] || find "$root" -iname "*simplesaml*" -print -quit; done' | grep -q . || { echo "SimpleSAMLphp payload must not be present" >&2; exit 1; }
 
