@@ -4,7 +4,7 @@ $dockerfile = Get-Content -Raw (Join-Path $root 'Dockerfile')
 $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
-  'php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b',
+  'php@sha256:411df529915598ee7d08adf8616b328fb1272cbb272e82ffa572d6fcf3f204cd',
   'apt-get upgrade -y', 'docker-php-ext-install',
   'docker-php-ext-configure ldap --with-ldap', 'docker-php-ext-configure zip --with-zip',
   'libxml2-dev', 'libldap2-dev', 'libldap-2.5-0', 'libzip-dev', 'libzip4', 'unzip',

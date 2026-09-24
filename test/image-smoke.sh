@@ -2,7 +2,7 @@
 set -eu
 
 : "${IMAGE:?Set IMAGE to the locally built image reference}"
-EXPECTED_PHP_VERSION="${EXPECTED_PHP_VERSION:-8.5.9}"
+EXPECTED_PHP_VERSION="${EXPECTED_PHP_VERSION:-8.5.10}"
 PLATFORM="${PLATFORM:-}"
 run_args=""
 if [ -n "$PLATFORM" ]; then

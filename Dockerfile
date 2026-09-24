@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
-# Docker Official Image manifest index verified 2026-08-22:
-# php:8.5.9-apache-bookworm -> sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b
-ARG PHP_BASE_IMAGE=php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b
+# Docker Official Image manifest index verified 2026-09-24:
+# php:8.5.10-apache-bookworm -> sha256:411df529915598ee7d08adf8616b328fb1272cbb272e82ffa572d6fcf3f204cd
+ARG PHP_BASE_IMAGE=php@sha256:411df529915598ee7d08adf8616b328fb1272cbb272e82ffa572d6fcf3f204cd
 FROM ${PHP_BASE_IMAGE}
 
-LABEL org.opencontainers.image.title="PHP 8.5.9 Apache runtime"
+LABEL org.opencontainers.image.title="PHP 8.5.10 Apache runtime"
 LABEL org.opencontainers.image.description="Runtime-only PHP image; it contains no SimpleSAMLphp application or PostgreSQL service."
 
 # Keep only the libraries needed at runtime after compiling the PHP extensions.

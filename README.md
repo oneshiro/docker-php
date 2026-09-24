@@ -1,12 +1,12 @@
-# PHP 8.5.9 Apache Runtime
+# PHP 8.5.10 Apache Runtime
 
-Docker image สำหรับรัน PHP 8.5.9 บน Apache 2.4 รองรับ `linux/amd64` และ `linux/arm64` ออกแบบเป็น runtime กลางสำหรับนำ application มาติดตั้งหรือ mount เพิ่มภายหลัง
+Docker image สำหรับรัน PHP 8.5.10 บน Apache 2.4 รองรับ `linux/amd64` และ `linux/arm64` ออกแบบเป็น runtime กลางสำหรับนำ application มาติดตั้งหรือ mount เพิ่มภายหลัง
 
 Image รันด้วยผู้ใช้ non-root `www-data` ภายใน container, Apache ฟัง HTTP ที่ port `8080` และ HTTPS ที่ port `8443` มี Composer 2 พร้อมใช้งาน ไม่รวม application code, database server, credentials หรือไฟล์ secret
 
 ## ส่วนประกอบหลัก
 
-- PHP 8.5.9 บน Debian Bookworm
+- PHP 8.5.10 บน Debian Bookworm
 - Apache 2.4 พร้อม `mod_rewrite` และ `mod_ssl`
 - Composer 2 จาก official Composer image
 - `unzip` สำหรับแตก ZIP archive ที่ Composer ใช้งานได้
@@ -130,8 +130,8 @@ ghcr.io/OWNER/REPOSITORY:TAG
 ตัวอย่าง:
 
 ```sh
-docker pull ghcr.io/oneshiro/docker-php:8.5.9
-docker run -d --name php-runtime -p 80:8080 -p 443:8443 ghcr.io/oneshiro/docker-php:8.5.9
+docker pull ghcr.io/oneshiro/docker-php:8.5.10
+docker run -d --name php-runtime -p 80:8080 -p 443:8443 ghcr.io/oneshiro/docker-php:8.5.10
 ```
 
 Production ควร pin immutable digest จาก GitHub Actions run summary:
@@ -147,7 +147,7 @@ image: ghcr.io/oneshiro/docker-php@sha256:RELEASE_DIGEST
 Base image pin ด้วย multi-platform digest:
 
 ```text
-php@sha256:68e1de9a82af09f1b0ae70611bd64a8702069ac1e036bdc5a12eb48e1a5cab2b
+php@sha256:411df529915598ee7d08adf8616b328fb1272cbb272e82ffa572d6fcf3f204cd
 ```
 
 เมื่อต้องอัปเดต base image ให้เปลี่ยน digestผ่าน dependency update ซึ่งผ่าน review แล้วรัน smoke test ซ้ำทั้ง `amd64` และ `arm64`
