@@ -12,18 +12,20 @@ RUN set -eux; \
     savedAptMark="$(apt-mark showmanual)"; \
     apt-get update; \
     apt-get upgrade -y; \
-    apt-get install -y --no-install-recommends libicu-dev libldap2-dev libpq-dev libxml2-dev libzip-dev unzip; \
+    apt-get install -y --no-install-recommends libicu-dev libldap2-dev libpq-dev libxml2-dev libzip-dev openssl unzip; \
     docker-php-ext-configure ldap --with-ldap; \
     docker-php-ext-configure zip --with-zip; \
     docker-php-ext-install -j"$(nproc)" bcmath intl ldap pdo_mysql pdo_pgsql simplexml zip; \
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark; \
-    apt-mark manual libicu72 libldap-2.5-0 libpq5 libzip4 unzip; \
+    apt-mark manual libicu72 libldap-2.5-0 libpq5 libzip4 openssl unzip; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /var/lib/apt/lists/*
 
 COPY docker/apache/ports.conf /etc/apache2/ports.conf
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache/https-default.conf /etc/apache2/sites-available/https-default.conf
+COPY docker/apache/tls-entrypoint.sh /usr/local/bin/tls-entrypoint
 COPY docker/apache/zz-runtime.conf /etc/apache2/conf-available/zz-runtime.conf
 COPY docker/php/conf.d/zz-runtime.ini /usr/local/etc/php/conf.d/zz-runtime.ini
 
@@ -32,12 +34,14 @@ COPY --from=composer/composer:2-bin /composer /usr/local/bin/composer
 
 RUN set -eux; \
     a2enconf zz-runtime; \
-    a2enmod rewrite; \
+    a2enmod rewrite ssl; \
+    a2ensite https-default; \
+    chmod +x /usr/local/bin/tls-entrypoint; \
     mkdir -p /var/run/apache2 /var/lock/apache2; \
     chown -R www-data:www-data /var/run/apache2 /var/lock/apache2 /var/www/html; \
     rm -f /var/www/html/index.html
 
 USER www-data
-EXPOSE 8080
+EXPOSE 8080 8443
 
-CMD ["apache2-foreground"]
+CMD ["tls-entrypoint", "apache2-foreground"]

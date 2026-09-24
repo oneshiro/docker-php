@@ -2,12 +2,12 @@
 
 Docker image สำหรับรัน PHP 8.5.9 บน Apache 2.4 รองรับ `linux/amd64` และ `linux/arm64` ออกแบบเป็น runtime กลางสำหรับนำ application มาติดตั้งหรือ mount เพิ่มภายหลัง
 
-Image รันด้วยผู้ใช้ non-root `www-data` ภายใน container, Apache ฟัง port `8080` และมี Composer 2 พร้อมใช้งาน ไม่รวม application code, database server, credentials หรือไฟล์ secret
+Image รันด้วยผู้ใช้ non-root `www-data` ภายใน container, Apache ฟัง HTTP ที่ port `8080` และ HTTPS ที่ port `8443` มี Composer 2 พร้อมใช้งาน ไม่รวม application code, database server, credentials หรือไฟล์ secret
 
 ## ส่วนประกอบหลัก
 
 - PHP 8.5.9 บน Debian Bookworm
-- Apache 2.4 พร้อม `mod_rewrite`
+- Apache 2.4 พร้อม `mod_rewrite` และ `mod_ssl`
 - Composer 2 จาก official Composer image
 - `unzip` สำหรับแตก ZIP archive ที่ Composer ใช้งานได้
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
@@ -42,14 +42,28 @@ docker compose run --rm php php -m
 
 ## Build และ Run
 
-เปิด service ผ่าน host port `80`:
+เปิด service ผ่าน host port `80` และ `443`:
 
 ```sh
 docker compose up --build -d
 docker compose ps
 ```
 
-Apache ภายใน container ฟัง port `8080` โดย `compose.yaml` map `80:8080` หาก port 80 ถูกใช้งานอยู่ ให้เปลี่ยน host port หรือหยุด serviceเดิมก่อน
+เข้าใช้ได้ทั้ง `http://localhost` และ `https://localhost` โดย Compose map `80:8080` และ `443:8443` ตามลำดับ Container สร้าง self-signed certificate สำหรับ `localhost` ตอนเริ่มทำงาน จึงมีคำเตือนเรื่องความน่าเชื่อถือใน browser
+
+สำหรับ production ให้ mount certificate และ private key ของ domain แล้วตั้งค่า path ใน `compose.override.yaml`:
+
+```yaml
+services:
+  php:
+    environment:
+      HTTPS_CERT_FILE: /certs/fullchain.pem
+      HTTPS_KEY_FILE: /certs/privkey.pem
+    volumes:
+      - ./certs:/certs:ro
+```
+
+วางไฟล์ certificate ใน `./certs` private key ต้องไม่เข้ารหัส และกำหนด permission ให้ process `www-data` (UID 33) อ่าน certificate กับ private key ได้
 
 ตรวจ PHP, Composer และ `unzip`:
 
@@ -117,7 +131,7 @@ ghcr.io/OWNER/REPOSITORY:TAG
 
 ```sh
 docker pull ghcr.io/oneshiro/docker-php:8.5.9
-docker run -d --name php-runtime -p 80:8080 ghcr.io/oneshiro/docker-php:8.5.9
+docker run -d --name php-runtime -p 80:8080 -p 443:8443 ghcr.io/oneshiro/docker-php:8.5.9
 ```
 
 Production ควร pin immutable digest จาก GitHub Actions run summary:
