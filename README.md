@@ -4,9 +4,11 @@ Docker image สำหรับรัน PHP 7.3.33 บน Apache 2.4 รอง�
 
 Image รันด้วยผู้ใช้ non-root `www-data` ภายใน container, Apache ฟัง port `8080` และมี Composer 2 พร้อมใช้งาน ไม่รวม application code, database server, credentials หรือไฟล์ secret
 
+> **หมายเหตุ EOL:** PHP 7.3 และ Debian Bullseye หมดอายุแล้ว Image นี้สำหรับ legacy application เท่านั้น อย่าใช้กับ workload ใหม่ และอย่าคาดหวัง security patch จาก Debian อีก
+
 ## ส่วนประกอบหลัก
 
-- PHP 7.3.33 บน Debian Bullseye
+- PHP 7.3.33 บน Debian Bullseye (EOL; apt ใช้ `archive.debian.org` สำหรับ `main` / `updates`)
 - Apache 2.4 พร้อม `mod_rewrite`
 - Composer 2.2 LTS จาก pinned Composer image
 - CLI tools: `git`, `unzip`, `zip`
@@ -15,7 +17,7 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
 - Apache ทำงานด้วย `www-data` และไม่ใช้สิทธิ์ root
 - GitHub Actions build และตรวจทั้ง `amd64` กับ `arm64`
-- Trivy สร้างรายงานช่องโหว่ `HIGH/CRITICAL` (รวม unfixed) เป็น artifact; ไม่บล็อก build เพราะ Debian Bullseye EOL ไม่มี security patch ติดตั้งได้แล้ว
+- Trivy สร้างรายงานช่องโหว่ `HIGH/CRITICAL` เป็น artifact แต่ไม่บล็อก release เพราะ Bullseye ไม่มี security package ติดตั้งได้แล้ว
 
 ## PHP extensions
 
@@ -39,6 +41,14 @@ Extensions สำคัญพร้อมใช้งานใน image:
 
 ```sh
 docker compose run --rm php php -m
+```
+
+## CLI tools
+
+Image มี `git`, `unzip`, `zip` สำหรับ Composer และงาน build ใน container
+
+```sh
+docker compose run --rm php sh -c 'command -v git && command -v unzip && command -v zip'
 ```
 
 ## LDAP และ Memcached
@@ -122,7 +132,14 @@ Static contract บน Windows:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\test\dockerfile-contract.ps1
 ```
 
-Smoke test ตรวจ version, extensions, Composer, non-root user และ PHP endpoint ผ่าน Apache port `8080`
+Smoke test ตรวจ PHP version, extensions, Composer, CLI tools (`git`/`unzip`/`zip`), non-root user และ PHP endpoint ผ่าน Apache port `8080`
+
+## ความปลอดภัยและ Trivy
+
+- Debian Bullseye EOL: build ชี้ `archive.debian.org` และปิด `Valid-Until` check เพราะ mirror ปกติ/security ไม่ใช้ได้แล้ว
+- CI สแกน Trivy ทั้ง vulnerabilities ทั้งหมด และเฉพาะรายการที่ Trivy ทำเครื่องหมายว่ามีแพตช์ แล้วเก็บ JSON report เป็น artifact
+- Gate ไม่ fail จาก Trivy เพราะ package ที่มีแพตช์ในฐานข้อมูลช่องโหว่ติดตั้งจาก Bullseye security archive ไม่ได้แล้ว
+- Production ควรจำกัด network exposure, รัน non-root (ค่าเริ่มต้นของ image), และวางแผนย้ายไป PHP/OS ที่ยังรับแพตช์
 
 ## GHCR และ Release
 
