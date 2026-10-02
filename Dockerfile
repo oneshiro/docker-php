@@ -35,6 +35,12 @@ RUN set -eux; \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
     rm -rf /tmp/saved-apt-mark /var/lib/apt/lists/*
 
+# Runtime CLI tools kept after build-dep purge.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends git unzip zip; \
+    rm -rf /var/lib/apt/lists/*
+
 # Composer 2.2 LTS supports the legacy PHP runtime; the multi-platform source is pinned.
 COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer
 

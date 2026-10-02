@@ -9,6 +9,7 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - PHP 7.3.33 บน Debian Bullseye
 - Apache 2.4 พร้อม `mod_rewrite`
 - Composer 2.2 LTS จาก pinned Composer image
+- CLI tools: `git`, `unzip`, `zip`
 - LDAP extension
 - `memcached` 3.1.5 จาก PECL
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite

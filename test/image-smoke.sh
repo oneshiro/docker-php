@@ -23,6 +23,9 @@ done
 
 [ "$(run id -u)" != "0" ] || { echo "container runs as root" >&2; exit 1; }
 run composer --version | grep -F 'Composer version 2.' >/dev/null || { echo "Composer 2 is unavailable" >&2; exit 1; }
+for tool in git unzip zip; do
+  run sh -c "command -v $tool" >/dev/null || { echo "missing runtime tool: $tool" >&2; exit 1; }
+done
 ! run sh -c 'command -v psql' || { echo "PostgreSQL client must not be present" >&2; exit 1; }
 
 health_dir="$(mktemp -d)"

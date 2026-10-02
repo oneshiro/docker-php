@@ -10,6 +10,7 @@ foreach ($required in @(
   'pecl install memcached-3.1.5', 'docker-php-ext-enable memcached',
   '$PHPIZE_DEPS', '/tmp/saved-apt-mark', 'php -m | grep -Fx ldap', 'phpize --version',
   'pkg-config --modversion libmemcached', 'pkg-config --modversion zlib', 'php --ri memcached', 'libldap-2.4-2', 'libmemcached11', 'zlib1g',
+  'git unzip zip',
   'USER www-data', 'EXPOSE 8080',
   'COPY --from=composer/composer:2.2-bin@sha256:47adfdf4370e7ec65f826166d563752ba2f4afedf499a9f963b0a04d5c38f05c /composer /usr/local/bin/composer'
 )) {
@@ -41,7 +42,7 @@ foreach ($path in @('docker/apache/000-default.conf', 'docker/apache/ports.conf'
 
 $smokeTest = Get-Content -Raw (Join-Path $root 'test/image-smoke.sh')
 if ($smokeTest -cnotmatch '\bSimpleXML\b') { throw 'Image smoke contract missing case-sensitive PHP module name: SimpleXML' }
-foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind', 'ldap', 'memcached')) {
+foreach ($required in @('health.php', 'php-smoke-ok', 'type=bind', 'ldap', 'memcached', 'git', 'unzip', 'zip')) {
   if ($smokeTest -notmatch [regex]::Escape($required)) { throw "Image smoke health contract missing: $required" }
 }
 if ($smokeTest -match '(?i)simplesaml') { throw 'Image smoke test must not depend on SimpleSAMLphp' }
