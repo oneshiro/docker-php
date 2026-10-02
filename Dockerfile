@@ -7,17 +7,16 @@ FROM ${PHP_BASE_IMAGE}
 LABEL org.opencontainers.image.title="PHP 7.3.33 Apache runtime"
 LABEL org.opencontainers.image.description="Runtime-only PHP image; it contains no application payload or PostgreSQL service."
 
-# Bullseye is EOL: use archive mirrors and ignore expired Valid-Until metadata.
+# Bullseye is EOL: archive.debian.org has main/updates, but not bullseye-security yet.
 RUN set -eux; \
     printf '%s\n' \
       'deb http://archive.debian.org/debian bullseye main' \
-      'deb http://archive.debian.org/debian-security bullseye-security main' \
       'deb http://archive.debian.org/debian bullseye-updates main' \
       > /etc/apt/sources.list; \
     rm -f /etc/apt/sources.list.d/*; \
     savedAptMark="$(apt-mark showmanual)"; \
     printf '%s\n' "$savedAptMark" > /tmp/saved-apt-mark; \
-    apt-get -o Acquire::Check-Valid-Until=false update; \
+    apt-get -o Acquire::Check-Valid-Until=false -o Acquire::AllowReleaseInfoChange=true update; \
     apt-get -o Acquire::Check-Valid-Until=false upgrade -y; \
     apt-get -o Acquire::Check-Valid-Until=false install -y --no-install-recommends $PHPIZE_DEPS libicu-dev libldap2-dev libmemcached-dev libpq-dev libsqlite3-dev libxml2-dev zlib1g-dev
 

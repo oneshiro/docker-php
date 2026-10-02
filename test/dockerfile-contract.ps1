@@ -5,7 +5,7 @@ $workflow = Join-Path $root '.github/workflows/container.yml'
 
 foreach ($required in @(
   'php@sha256:de13b730d81098236cde5fe90810e1572dc5c51cd190f83024ccf9e7a142ec05',
-  'archive.debian.org', 'Acquire::Check-Valid-Until=false',
+  'archive.debian.org', 'Acquire::Check-Valid-Until=false', 'AllowReleaseInfoChange=true',
   'apt-get -o Acquire::Check-Valid-Until=false upgrade -y', 'docker-php-ext-install', 'libldap2-dev', 'libmemcached-dev', 'libxml2-dev', 'libsqlite3-dev', 'zlib1g-dev',
   'intl', 'ldap', 'mbstring', 'pdo_mysql', 'pdo_pgsql', 'pdo_sqlite', 'simplexml',
   'pecl install memcached-3.1.5', 'docker-php-ext-enable memcached',
