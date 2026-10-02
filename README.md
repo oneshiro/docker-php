@@ -15,7 +15,7 @@ Image รันด้วยผู้ใช้ non-root `www-data` ภายใ�
 - PDO สำหรับเชื่อมต่อ MySQL/MariaDB, PostgreSQL และ SQLite
 - Apache ทำงานด้วย `www-data` และไม่ใช้สิทธิ์ root
 - GitHub Actions build และตรวจทั้ง `amd64` กับ `arm64`
-- Trivy สร้างรายงานช่องโหว่ทั้งหมด และบล็อก `HIGH/CRITICAL` ซึ่งมีแพตช์
+- Trivy สร้างรายงานช่องโหว่ `HIGH/CRITICAL` (รวม unfixed) เป็น artifact; ไม่บล็อก build เพราะ Debian Bullseye EOL ไม่มี security patch ติดตั้งได้แล้ว
 
 ## PHP extensions
 

@@ -59,10 +59,11 @@ if (Test-Path $workflow) {
   foreach ($required in @('linux/amd64', 'linux/arm64', 'provenance: mode=max', 'sbom: true', 'CRITICAL,HIGH')) {
     if ($content -notmatch [regex]::Escape($required)) { throw "Workflow contract missing: $required" }
   }
-  foreach ($required in @('Report all local image vulnerabilities', 'Enforce fixable local image vulnerabilities', 'Report all published vulnerabilities', 'Enforce fixable published vulnerabilities')) {
+  foreach ($required in @('Report all local image vulnerabilities', 'Report fixable local image vulnerabilities', 'Report all published vulnerabilities', 'Report fixable published vulnerabilities')) {
     if ($content -notmatch [regex]::Escape($required)) { throw "Workflow vulnerability policy missing: $required" }
   }
-  if ([regex]::Matches($content, 'ignore-unfixed: true').Count -ne 2) { throw 'Workflow must gate fixable vulnerabilities in validation and publish jobs' }
+  if ([regex]::Matches($content, 'ignore-unfixed: true').Count -ne 2) { throw 'Workflow must report fixable vulnerabilities in validation and publish jobs' }
+  if ([regex]::Matches($content, "exit-code: '0'").Count -lt 4) { throw 'Workflow must keep Trivy non-blocking on EOL Bullseye' }
 }
 
 Write-Host 'Static Docker contract passed.'
